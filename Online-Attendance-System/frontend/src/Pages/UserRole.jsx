@@ -1,7 +1,7 @@
 import { CircleUserRound, Users, GraduationCap } from "lucide-react";
 import LoginCard from "../Components/LoginCard";
 
-const LoginPage = () => {
+const UserRole = () => {
 
     return (
         <>
@@ -26,4 +26,4 @@ const LoginPage = () => {
     );
 }
 
-export default LoginPage;
+export default UserRole;
