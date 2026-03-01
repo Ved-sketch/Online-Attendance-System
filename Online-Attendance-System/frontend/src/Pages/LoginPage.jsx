@@ -2,6 +2,7 @@ import { CircleUserRound, Users, GraduationCap } from "lucide-react";
 import LoginCard from "../Components/LoginCard";
 
 const LoginPage = () => {
+
     return (
         <>
             <div className=" min-h-screen">
