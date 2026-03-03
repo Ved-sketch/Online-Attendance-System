@@ -1,6 +1,8 @@
 import { User, Mail, Lock, IdCard, Building2, ChevronDown } from "lucide-react";
+import googleLogo from "../assets/google-logo.webp";
 
 const SignupForm = ({userRole,Identification,Task}) => {
+
     return (
         <div className="flex flex-col items-center justify-center min-h-screen bg-[#fdfbfb] p-4">
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6 text-center">
@@ -76,7 +78,7 @@ const SignupForm = ({userRole,Identification,Task}) => {
                     {/* Department and Subject/Semester Row */}
                     <div className="grid grid-cols-2 gap-4">
                         {/* Department */}
-                        <div>
+                        {/* <div>
                             <label className="block text-[14px] font-semibold text-[#545a6b] mb-1.5">
                                 Department
                             </label>
@@ -97,10 +99,10 @@ const SignupForm = ({userRole,Identification,Task}) => {
                                     <ChevronDown className="w-4 h-4 stroke-[2]" />
                                 </span>
                             </div>
-                        </div>
+                        </div> */}
 
                         {/* Subject / Semester */}
-                        <div>
+                        {/* <div>
                             <label className="block text-[14px] font-semibold text-[#545a6b] mb-1.5">
                                 {Task}
                             </label>
@@ -118,7 +120,7 @@ const SignupForm = ({userRole,Identification,Task}) => {
                                     <ChevronDown className="w-4 h-4 stroke-[2]" />
                                 </span>
                             </div>
-                        </div>
+                        </div> */}
                     </div>
 
                     {/* Submit Button */}
@@ -132,13 +134,29 @@ const SignupForm = ({userRole,Identification,Task}) => {
                     </div>
 
                     {/* Bottom Redirect */}
-                    <div className="mt-6 text-center">
+                    {/* <div className="mt-6 text-center">
                         <span className="text-[14px] text-[#545a6b] font-medium">
                             Already have an account?{' '}
                         </span>
                         <a href="/login" className="text-[14px] text-[#ef4444] hover:text-[#d73d3d] font-semibold transition-colors">
                             Login
                         </a>
+                    </div> */}
+
+                    <div className="flex items-center gap-3">
+                        <div className="flex-1 border-t border-gray-300"></div>
+                        <span className="text-[14px] text-[#9ca3af] font-medium">or</span>
+                        <div className="flex-1 border-t border-gray-300"></div>
+                    </div>
+
+                    <div>
+                        <button
+                            type="button"
+                            className="w-full bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium py-2 rounded-xl transition-all shadow-sm shadow-gray-200 text-[15px] flex items-center justify-center"
+                        >
+                            <img src={googleLogo} alt="Google Logo" className="w-10 h-10 mr-3" />
+                            Sign in with Google
+                        </button>
                     </div>
 
                 </form>
