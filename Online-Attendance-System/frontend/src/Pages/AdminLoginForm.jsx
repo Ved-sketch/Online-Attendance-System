@@ -1,4 +1,5 @@
 import { CircleUserRound, Mail, Lock } from "lucide-react";
+import googleLogo from "../assets/google-logo.webp";
 
 const AdminLoginPage = () => {
     return (
@@ -53,14 +54,30 @@ const AdminLoginPage = () => {
                         </button>
                     </div>
 
-                    <div className="text-right">
+                    {/* <div className="text-right">
                         <a href="#" className="inline-block text-[14px] text-[#9ca3af] hover:text-gray-600 transition-colors font-medium">
                             Forgot password?
                         </a>
+                    </div> */}
+
+                    <div className="flex items-center gap-3">
+                        <div className="flex-1 border-t border-gray-300"></div>
+                        <span className="text-[14px] text-[#9ca3af] font-medium">or</span>
+                        <div className="flex-1 border-t border-gray-300"></div>
+                    </div>
+
+                    <div>
+                        <button
+                            type="button"
+                            className="w-full bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium py-2 rounded-xl transition-all shadow-sm shadow-gray-200 text-[15px] flex items-center justify-center"
+                        >
+                            <img src={googleLogo} alt="Google Logo" className="w-10 h-10 mr-3" />
+                            Sign in with Google
+                        </button>
                     </div>
                 </form>
 
-                <div className="mt-12 text-center">
+                <div className="mt-5 text-center">
                     <a href="/" className="inline-block text-[15px] text-[#9ca3af] hover:text-gray-600 transition-colors font-medium">
                         Back to Role Selection
                     </a>
