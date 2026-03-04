@@ -62,7 +62,7 @@ const AdminDashboard = () => {
             </div>
             <div className='p-5 bg-[#FEF6F6] flex-1'>
                 {/* Stats Grid */}
-                <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-6xl'>
+                <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-6xl mb-6'>
                     {/* Total Students Card */}
                     <div className='bg-white rounded-lg p-6 shadow-sm'>
                         <div className='flex items-center gap-2 text-gray-500 mb-2'>
@@ -107,6 +107,20 @@ const AdminDashboard = () => {
                         </div>
                         <div className='text-3xl font-bold text-gray-800'>{stats.attendanceRate}%</div>
                     </div>
+                </div>
+
+                {/* Students and Teachers Buttons */}
+                <div className='flex gap-4'>
+
+                    <button className='bg-transparent border-none flex items-center gap-2 text-gray-700 hover:text-gray-900 cursor-pointer'>
+                        <GraduationCap size={20} />
+                        <span className='font-medium'>Students</span>
+                    </button>
+
+                    <button className='bg-transparent border-none flex items-center gap-2 text-gray-700 hover:text-gray-900 cursor-pointer'>
+                        <Users size={20} />
+                        <span className='font-medium'>Teachers</span>
+                    </button>
                 </div>
             </div>
         </div>

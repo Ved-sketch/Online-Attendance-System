@@ -14,7 +14,7 @@ const SignupForm = ({userRole,Identification,Task}) => {
         if(name.length == 0 || employeeId == 0){
             alert('Please fill all the required field');
             return;
-        }        git commit -m "Initial commit on development-v2 branch"        git commit -m "Initial commit on development-v2 branch"        git commit -m "Initial commit on development-v2 branch"        git commit -m "Initial commit on development-v2 branch"
+        }
         const user = await authWithFirebase.loginGoogle();
         console.warn(`this is from ui page ${user}`);
         
