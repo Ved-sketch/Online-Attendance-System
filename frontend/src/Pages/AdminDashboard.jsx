@@ -194,11 +194,11 @@ const AdminDashboard = () => {
                 </div>
 
                 {/* Students and Teachers Buttons */}
-                <div className='flex gap-4 mb-6'>
+                <div className='flex gap-4 mb-6 w-fit bg-[#ffeded] rounded-full p-2'>
                     <button 
                         onClick={handleStudentsClick}
-                        className={`bg-transparent border-none flex items-center gap-2 hover:text-gray-900 cursor-pointer ${
-                            activeView === 'students' ? 'text-gray-900 font-semibold' : 'text-gray-700'
+                        className={`bg-transparent border-none flex items-center gap-2 p-2 hover:text-gray-900 cursor-pointer ${
+                            activeView === 'students' ? 'text-gray-900 font-semibold bg-white border rounded-full' : 'text-gray-700'
                         }`}
                     >
                         <GraduationCap size={20} />
@@ -207,8 +207,8 @@ const AdminDashboard = () => {
 
                     <button 
                         onClick={handleTeachersClick}
-                        className={`bg-transparent border-none flex items-center gap-2 hover:text-gray-900 cursor-pointer ${
-                            activeView === 'teachers' ? 'text-gray-900 font-semibold' : 'text-gray-700'
+                        className={`bg-transparent border-none flex items-center gap-2 p-2 hover:text-gray-900 cursor-pointer ${
+                            activeView === 'teachers' ? 'text-gray-900 font-semibold bg-white border rounded-full' : 'text-gray-700'
                         }`}
                     >
                         <Users size={20} />
@@ -218,7 +218,7 @@ const AdminDashboard = () => {
 
                 {/* Student Attendance Table */}
                 {activeView === 'students' && (
-                    <div className='bg-white rounded-lg shadow-sm p-6'>
+                    <div className='bg-white rounded-lg shadow-sm p-4'>
                         <div className='mb-4'>
                             <h3 className='text-xl font-bold text-gray-800'>Student Attendance Records</h3>
                             <p className='text-gray-500 text-sm'>View and manage student attendance data</p>
@@ -252,6 +252,52 @@ const AdminDashboard = () => {
                                                 <td className='py-3 px-4 text-sm'>
                                                     <span className='bg-green-100 text-green-700 px-3 py-1 rounded-full font-medium'>
                                                         {student.attendanceRate.toFixed(1)}%
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        )}
+                    </div>
+                )}
+
+                {/* Teacher's table */}
+                {activeView === 'teachers' && (
+                    <div className='bg-white rounded-lg shadow-sm p-6'>
+                        <div className='mb-4'>
+                            <h3 className='text-xl font-bold text-gray-800'>Teacher Overview</h3>
+                            <p className='text-gray-500 text-sm'>View teacher statistics and class management</p>
+                        </div>
+                        
+                        {loading ? (
+                            <div className='text-center py-8 text-gray-500'>Loading...</div>
+                        ) : (
+                            <div className='overflow-x-auto'>
+                                <table className='w-full'>
+                                    <thead>
+                                        <tr className='border-b border-gray-200'>
+                                            <th className='text-left py-3 px-4 text-sm font-semibold text-gray-600'>Teacher Name</th>
+                                            <th className='text-left py-3 px-4 text-sm font-semibold text-gray-600'>Subject</th>
+                                            <th className='text-left py-3 px-4 text-sm font-semibold text-gray-600'>Total Classes</th>
+                                            <th className='text-left py-3 px-4 text-sm font-semibold text-gray-600'>Students Today</th>
+                                            <th className='text-left py-3 px-4 text-sm font-semibold text-gray-600'>Present</th>
+                                            <th className='text-left py-3 px-4 text-sm font-semibold text-gray-600'>Absent</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {teacherData.map((teacher) => (
+                                            <tr key={teacher.id} className='border-b border-gray-100 hover:bg-gray-50'>
+                                                <td className='py-3 px-4 text-sm text-blue-600'>{teacher.name}</td>
+                                                <td className='py-3 px-4 text-sm text-gray-700'>{teacher.subject}</td>
+                                                <td className='py-3 px-4 text-sm text-gray-700'>{teacher.totalClasses}</td>
+                                                <td className='py-3 px-4 text-sm text-gray-700'>{teacher.studentsToday}</td>
+                                                <td className='py-3 px-4 text-sm text-gray-700'>{teacher.present}</td>
+                                                <td className='py-3 px-4 text-sm text-red-600'>{teacher.absent}</td>
+                                                <td className='py-3 px-4 text-sm'>
+                                                    <span className='bg-green-100 text-green-700 px-3 py-1 rounded-full font-medium'>
+                                                        {teacher.attendanceRate.toFixed(1)}%
                                                     </span>
                                                 </td>
                                             </tr>
