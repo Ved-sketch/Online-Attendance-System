@@ -4,6 +4,7 @@ import { Toaster } from "react-hot-toast"
 import AdminLoginPage from "./Pages/AdminLoginForm";
 import SignupForm from "./Pages/SignupForm";
 import AdminDashboard from "./Pages/AdminDashboard";
+import { TeacherDashboard } from "./Pages/TeacherDashboard";
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
@@ -31,6 +32,16 @@ const App = () => {
           </ProtectedRoute>
         }></Route>
         <Route path="/Teacher" element={<SignupForm userRole={"Teacher"} Identification={"Employee ID"} Task={"Subject"} />}></Route>
+        <Route path="/Admin/dashboard" element={
+          <ProtectedRoute>
+            <AdminDashboard />
+          </ProtectedRoute>
+        }></Route>
+        <Route path="/Teacher/dashboard" element={
+          <ProtectedRoute>
+            <TeacherDashboard />
+          </ProtectedRoute>
+        }></Route>
         <Route path="/Student" element={<SignupForm userRole={"Student"} Identification={"Student ID"} Task={"Semester"} />}></Route>
       </Routes>
     </>
