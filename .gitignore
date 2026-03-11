@@ -42,3 +42,9 @@ coverage/
 # Temporary files
 *.tmp
 .cache/
+
+# Local extracted copies
+Online-Attendance-System-main/
+
+# Local Firebase credentials
+backend/src/config/serviceAccountKey.json

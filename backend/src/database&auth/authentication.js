@@ -2,7 +2,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 import { GoogleAuthProvider, signInWithPopup, getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import DB from './RTDBstruct';
+
 
 const firebaseConfig = {
     apiKey: "AIzaSyBkCgj3_3_e5JppMu3ByFU1vprv3HT8coA",
@@ -18,7 +18,7 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getDatabase(app);
 const provider = new GoogleAuthProvider();
-const role = ['student', 'teacher', 'admin'];
+
 
 // Signup and login with google;
 async function loginGoogle() {
@@ -50,10 +50,44 @@ async function authStatusCheck() {
     });
 }
 
+// checking existing user
+async function weatherExists(user, role) {
+    try {
+        if (role == `admin`) {
+            const adminRef = ref(db, `admin/${user.uid}`);
+            const sanpshot = get(adminRef);
+            if (snapshot.exists) {
+                return true;
+            } else {
+                return false;
+            }
+        } else if (role == `Teacher`) {
+            const teacherRef = ref(db, `teacher/${user.uid}`);
+            const snapshot = get(teacherRef);
+            if (snapshot.exists) {
+                return true;
+            } else {
+                return false;
+            }
+        } else if (role == `Student`) {
+            const studentRef = ref(db,`student/${user.uid}`);
+            const snapshot = get(studentRef);
+            if (snapshot.exists) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+    } catch (error) {
+        console.error(error);
+        return false;
+    }
+}
 
 const authWithFirebase = {
     loginGoogle: loginGoogle,
-    authStatusCheck: authStatusCheck
+    authStatusCheck: authStatusCheck,
+    weatherExists: weatherExists,
 }
 
 export default authWithFirebase;
