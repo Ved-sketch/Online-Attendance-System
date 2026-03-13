@@ -1,8 +1,27 @@
 import { User, Mail, Lock, IdCard, Building2, ChevronDown } from "lucide-react";
 import googleLogo from "../assets/google-logo.webp";
 import React from "react";
-import authWithFirebase from "../../../backend/src/database&auth/authentication";
-import { useParams } from "react-router-dom";
+import DB from '../../../backend/src/database&auth/RTDBstruct'
+import authWithFirebase from '../../../backend/src/database&auth/authentication';
+
+const SignupForm = ({userRole,Identification,Task}) => {
+    
+    const [name, setName] = React.useState("");
+    const [employeeId,setEmployeeId] = React.useState("");
+
+    async function signupFnc(){
+        console.log("signup button is clicked");
+        if(name.length == 0 || employeeId == 0){
+            alert('Please fill all the required field');
+            return;
+        }
+        const user = await authWithFirebase.loginGoogle();
+        console.warn(`this is from ui page ${user}`);
+        
+        if(user != null){
+            DB.saveUserToRTDB(user);
+        }
+    }
 
 
 const SignupForm = async ({ userRole, Identification, Task }) => {

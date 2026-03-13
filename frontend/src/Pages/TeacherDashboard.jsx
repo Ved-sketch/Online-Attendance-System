@@ -1,42 +1,14 @@
 
 import { useState, useEffect } from 'react';
 import { ClassCard } from '../Components/ClassCard';
-import { AddClassModal } from "../Components/AddClassModal";
-import { ConnectAdminModal } from "../Components/ConnectAdminModal";
-import { getAuth } from 'firebase/auth';
-const auth = getAuth();
 
-export const TeacherDashboard = ({Name,prop1,prop2,prop3}) => {
-  
+export const TeacherDashboard = ({Name}) => {
   const [currentDate, setCurrentDate] = useState('');
   const [classes, setClasses] = useState([
     { id: 1, name: 'Class A - Mathematics', studentCount: 85, criteria: 75 },
     { id: 2, name: 'Class B - Science', studentCount: 70, criteria: 80 },
-    { id: 3, name: 'Class C - English', studentCount: 90, criteria: 70 },
-    { id: 4, name: 'Class C - cs', studentCount: 80, criteria: 50 }
+    { id: 3, name: 'Class C - English', studentCount: 90, criteria: 70 }
   ]);
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [showAdminModal, setShowAdminModal] = useState(false);
-
-  async function createClass(){
-    console.log(`create class button is clicked`);
-    const user = user.currentUser;
-    const token = await user.getIdToken();
-    const result = fetch("http://localhost:5000/api/teacher/new-class",{
-      method : 'POST',
-      header:{
-        "Content-Type": "application/json",
-        Authorization : `Bearer ${token}`
-      },
-      body: JSON.stringify({
-         
-      })
-    })
-  };
-
-  async function connectAdmin(){
-    console.log(`connect to admin is clciked`);
-  }
 
   useEffect(() => {
     const updateDate = () => {
@@ -72,7 +44,6 @@ export const TeacherDashboard = ({Name,prop1,prop2,prop3}) => {
   };
 
   return (
-    
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <header className="bg-white shadow-sm">
@@ -124,7 +95,7 @@ export const TeacherDashboard = ({Name,prop1,prop2,prop3}) => {
           {/* Action Buttons */}
           <div className="flex gap-3 mb-6">
             <button 
-              onClick={() => setShowAddModal(true)}
+              onClick={handleAddClass}
               className="flex items-center gap-2 bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -134,7 +105,7 @@ export const TeacherDashboard = ({Name,prop1,prop2,prop3}) => {
             </button>
             
             <button 
-              onClick={() => setShowAdminModal(true)}
+              onClick={handleConnectToAdmin}
               className="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 transition-colors"
             >
               Connect to Admin
@@ -161,17 +132,6 @@ export const TeacherDashboard = ({Name,prop1,prop2,prop3}) => {
           </div>
         </div>
       </main>
-      <AddClassModal
-  isOpen={showAddModal}
-  onClose={() => setShowAddModal(false)}
-  onCreate={createClass}
-/>
-
-<ConnectAdminModal
-  isOpen={showAdminModal}
-  onClose={() => setShowAdminModal(false)}
-  onConnect={connectAdmin}
-/>
     </div>
   )
 }
