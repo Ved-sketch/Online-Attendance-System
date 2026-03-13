@@ -1,11 +1,15 @@
 import { User, Mail, Lock, IdCard, Building2, ChevronDown } from "lucide-react";
 import googleLogo from "../assets/google-logo.webp";
-import { useParams } from "react-router-dom";
 import React from "react";
-import authWithFirebase from "../../../backend/src/database&auth/authentication.js";
+import authWithFirebase from "../../../backend/src/database&auth/authentication";
+import { useParams } from "react-router-dom";
 
-const SignupForm = ({ userRole, Identification, Task }) => {
+
+const SignupForm = async ({ userRole, Identification, Task }) => {
   console.log(`this is the role ${userRole}`);
+
+  const sesson = await authWithFirebase.authStatusCheck(userRole);
+  console.log(`result of sesson for redirecting ${sesson}`);
 
   const [name, setName] = React.useState("");
   const [employeeId, setEmployeeId] = React.useState("");
@@ -26,10 +30,10 @@ const SignupForm = ({ userRole, Identification, Task }) => {
 
     let existingUser;
     if (user != null) {
-      existingUser = authWithFirebase.weatherExists(user,role);
+      existingUser = await authWithFirebase.weatherExists(user,userRole);
     }
 
-    if (user != null && !existingUser) {
+    if (!existingUser) {
       const token = await user.getIdToken();
       try {
         const response = await fetch(
@@ -62,6 +66,7 @@ const SignupForm = ({ userRole, Identification, Task }) => {
       alert("You already have an account,So login please");
     }
   }
+
 
   async function loginFnc() {
     console.log("login button is clicked");

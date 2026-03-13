@@ -1,9 +1,15 @@
 import { CircleUserRound, Mail, Lock } from "lucide-react";
 import googleLogo from "../assets/google-logo.webp";
 import React from "react";
-import authWithFirebase from "../../../backend/src/database&auth/authentication.js";
+import authWithFirebase from "../../../backend/src/database&auth/authentication";
 
-const AdminLoginPage = () => {
+const AdminLoginPage = async () => {
+  const userRole = 'admin';
+  console.log(`this is the role ${userRole}`);
+
+  const sesson = await authWithFirebase.authStatusCheck('admin');
+  console.log(`result of sesson for redirecting ${sesson}`);
+  
   const [instituteName, setInstituteName] = React.useState("");
   const [adminName, setAdminName] = React.useState("");
 
@@ -27,10 +33,10 @@ const AdminLoginPage = () => {
     };
     let existingUser;
     if(user != null){
-        existingUser = authWithFirebase.weatherExists(user);
+        existingUser = await authWithFirebase.weatherExists(user,userRole);
     }
 
-    if (user != null && !existingUser) {
+    if (!existingUser) {
       const token = await user.getIdToken();
       try {
         const response = await fetch(
@@ -60,7 +66,7 @@ const AdminLoginPage = () => {
         return null;
       }
     }else{
-      alert('You already have an account,So login please');
+      alert('You already have an account');
     }
   }
 
@@ -97,13 +103,12 @@ const AdminLoginPage = () => {
 
           <div>
             <label className="block text-[15px] font-semibold text-[#545a6b] mb-2">
-              Admin name
+              Password
             </label>
             <div className="flex items-center px-4 py-3 border border-gray-200 rounded-xl focus-within:border-red-400 focus-within:ring-1 focus-within:ring-red-400 transition-all">
               <Lock className="w-[1.1rem] h-[1.1rem] text-[#ef4444] mr-3 shrink-0 stroke-[2]" />
               <input
-                type="password"
-                placeholder="Admin name"
+                placeholder="Institutes Name"
                 className="w-full bg-transparent outline-none text-[#545a6b] tracking-wider placeholder-[#a0aab8] text-[15px]"
                 onChange={(e) => setAdminName(e.target.value)}
               />
