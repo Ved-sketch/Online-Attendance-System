@@ -1,6 +1,7 @@
-import express from "express";
-
+import express from 'express'
 const router = express.Router();
+import {verifyToken,onNewClassAdd,leavingClass} from '../Controllers/studentControllers.js'
+router.post('/newclass-enroll',verifyToken,onNewClassAdd);
+router.post('/leaving-class',leavingClass);
 
-router.get("/",showAttendance);
-router.get("/student/subject_wise_attendance",showSubjectWiseAttendance);
+export default router;

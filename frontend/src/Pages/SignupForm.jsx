@@ -23,41 +23,101 @@ const SignupForm = ({userRole,Identification,Task}) => {
         }
     }
 
-    async function loginFnc(){
-        console.log("login button is clicked");
-        authWithFirebase.loginGoogle();
+
+const SignupForm = async ({ userRole, Identification, Task }) => {
+  console.log(`this is the role ${userRole}`);
+
+  const sesson = await authWithFirebase.authStatusCheck(userRole);
+  console.log(`result of sesson for redirecting ${sesson}`);
+
+  const [name, setName] = React.useState("");
+  const [employeeId, setEmployeeId] = React.useState("");
+
+  async function signupFnc() {
+    console.log("signup button is clicked");
+    if (name.length == 0 || employeeId == 0) {
+      alert("Please fill all the required field");
+      return;
+    }
+    const user = await authWithFirebase.loginGoogle();
+    console.warn(`this is from ui page ${user}`);
+
+    const personalInfo = {
+      name: name,
+      id: employeeId,
+    };
+
+    let existingUser;
+    if (user != null) {
+      existingUser = await authWithFirebase.weatherExists(user,userRole);
     }
 
+    if (!existingUser) {
+      const token = await user.getIdToken();
+      try {
+        const response = await fetch(
+          "http://localhost:5000/api/admin/signup-withgoogle",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+              role: userRole,
+              personalInfo: personalInfo,
+            }),
+          },
+        );
+        const result = await response.json();
 
-    
+        if (!response.ok) {
+          throw new Error(result.error || "Signup failed");
+        }
+        console.log("Signup Success:", result.message);
+        return result;
+      } catch (error) {
+        console.error("API Call Error:", error.message);
+        alert(`Error: ${error.message}`);
+        return null;
+      }
+    } else {
+      alert("You already have an account,So login please");
+    }
+  }
 
-    return (
-        <div className="flex flex-col items-center justify-center min-h-screen bg-[#fdfbfb] p-4">
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6 text-center">
-                Sign up as {userRole}
-            </h1>
 
-            <div className="w-full max-w-[440px] bg-white border border-red-50/50 shadow-[0_8px_30px_rgb(239,68,68,0.06)] rounded-2xl p-6 sm:p-8">
-                <form className="space-y-4">
+  async function loginFnc() {
+    console.log("login button is clicked");
+    authWithFirebase.loginGoogle();
+  }
 
-                    {/* Full Name */}
-                    <div>
-                        <label className="block text-[14px] font-semibold text-[#545a6b] mb-1.5">
-                            Full Name
-                        </label>
-                        <div className="flex items-center px-4 py-2.5 border border-gray-200 rounded-xl focus-within:border-red-400 focus-within:ring-1 focus-within:ring-red-400 transition-all">
-                            <User className="w-4 h-4 text-[#ef4444] mr-3 shrink-0 stroke-[2]" />
-                            <input
-                                type="text"
-                                placeholder="Full Name"
-                                className="w-full bg-transparent outline-none text-[#545a6b] placeholder-[#a0aab8] text-[14px]"
-                                onChange = {(e)=>setName(e.target.value)}
-                            />
-                        </div>
-                    </div>
+  return (
+    <div className="flex flex-col items-center justify-center min-h-screen bg-[#fdfbfb] p-4">
+      <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6 text-center">
+        Sign up as {userRole}
+      </h1>
 
-                    {/* Email Address */}
-                    {/* <div>
+      <div className="w-full max-w-[440px] bg-white border border-red-50/50 shadow-[0_8px_30px_rgb(239,68,68,0.06)] rounded-2xl p-6 sm:p-8">
+        <form className="space-y-4">
+          {/* Full Name */}
+          <div>
+            <label className="block text-[14px] font-semibold text-[#545a6b] mb-1.5">
+              Full Name
+            </label>
+            <div className="flex items-center px-4 py-2.5 border border-gray-200 rounded-xl focus-within:border-red-400 focus-within:ring-1 focus-within:ring-red-400 transition-all">
+              <User className="w-4 h-4 text-[#ef4444] mr-3 shrink-0 stroke-[2]" />
+              <input
+                type="text"
+                placeholder="Full Name"
+                className="w-full bg-transparent outline-none text-[#545a6b] placeholder-[#a0aab8] text-[14px]"
+                onChange={(e) => setName(e.target.value)}
+              />
+            </div>
+          </div>
+
+          {/* Email Address */}
+          {/* <div>
                         <label className="block text-[14px] font-semibold text-[#545a6b] mb-1.5">
                             Email Address
                         </label>
@@ -71,8 +131,8 @@ const SignupForm = ({userRole,Identification,Task}) => {
                         </div>
                     </div> */}
 
-                    {/* Password */}
-                    {/* <div>
+          {/* Password */}
+          {/* <div>
                         <label className="block text-[14px] font-semibold text-[#545a6b] mb-1.5">
                             Password
                         </label>
@@ -89,26 +149,26 @@ const SignupForm = ({userRole,Identification,Task}) => {
                         </p>
                     </div> */}
 
-                    {/* Identification (Employee ID / Roll No) */}
-                    <div>
-                        <label className="block text-[14px] font-semibold text-[#545a6b] mb-1.5">
-                            {Identification}
-                        </label>
-                        <div className="flex items-center px-4 py-2.5 border border-gray-200 rounded-xl focus-within:border-red-400 focus-within:ring-1 focus-within:ring-red-400 transition-all">
-                            <IdCard className="w-4 h-4 text-[#ef4444] mr-3 shrink-0 stroke-[2]" />
-                            <input
-                                type="text"
-                                placeholder={Identification}
-                                className="w-full bg-transparent outline-none text-[#545a6b] placeholder-[#a0aab8] text-[14px]"
-                                onChange={(e)=>setEmployeeId(e.target.value)}
-                            />
-                        </div>
-                    </div>
+          {/* Identification (Employee ID / Roll No) */}
+          <div>
+            <label className="block text-[14px] font-semibold text-[#545a6b] mb-1.5">
+              {Identification}
+            </label>
+            <div className="flex items-center px-4 py-2.5 border border-gray-200 rounded-xl focus-within:border-red-400 focus-within:ring-1 focus-within:ring-red-400 transition-all">
+              <IdCard className="w-4 h-4 text-[#ef4444] mr-3 shrink-0 stroke-[2]" />
+              <input
+                type="text"
+                placeholder={Identification}
+                className="w-full bg-transparent outline-none text-[#545a6b] placeholder-[#a0aab8] text-[14px]"
+                onChange={(e) => setEmployeeId(e.target.value)}
+              />
+            </div>
+          </div>
 
-                    {/* Department and Subject/Semester Row */}
-                    <div className="grid grid-cols-2 gap-4">
-                        {/* Department */}
-                        {/* <div>
+          {/* Department and Subject/Semester Row */}
+          <div className="grid grid-cols-2 gap-4">
+            {/* Department */}
+            {/* <div>
                             <label className="block text-[14px] font-semibold text-[#545a6b] mb-1.5">
                                 Department
                             </label>
@@ -131,8 +191,8 @@ const SignupForm = ({userRole,Identification,Task}) => {
                             </div>
                         </div> */}
 
-                        {/* Subject / Semester */}
-                        {/* { <div>
+            {/* Subject / Semester */}
+            {/* { <div>
                             <label className="block text-[14px] font-semibold text-[#545a6b] mb-1.5">
                                 {Task}
                             </label>
@@ -151,21 +211,21 @@ const SignupForm = ({userRole,Identification,Task}) => {
                                 </span>
                             </div>
                         </div>} */}
-                    </div>
+          </div>
 
-                    {/* Submit Button */}
-                    <div className="pt-4">
-                        <button
-                            type="button"
-                            className="w-full bg-[#ef4444] hover:bg-[#e63e3e] text-white font-medium py-3 rounded-xl transition-all shadow-md shadow-red-200 text-[15px]"
-                            onClick={signupFnc}
-                        >
-                            Create Account with Google
-                        </button>
-                    </div>
+          {/* Submit Button */}
+          <div className="pt-4">
+            <button
+              type="button"
+              className="w-full bg-[#ef4444] hover:bg-[#e63e3e] text-white font-medium py-3 rounded-xl transition-all shadow-md shadow-red-200 text-[15px]"
+              onClick={signupFnc}
+            >
+              Create Account with Google
+            </button>
+          </div>
 
-                    {/* Bottom Redirect */}
-                    {/* <div className="mt-6 text-center">
+          {/* Bottom Redirect */}
+          {/* <div className="mt-6 text-center">
                         <span className="text-[14px] text-[#545a6b] font-medium">
                             Already have an account?{' '}
                         </span>
@@ -174,33 +234,41 @@ const SignupForm = ({userRole,Identification,Task}) => {
                         </a>
                     </div> */}
 
-                    <div className="flex items-center gap-3">
-                        <div className="flex-1 border-t border-gray-300"></div>
-                        <span className="text-[14px] text-[#9ca3af] font-medium">Already have an account? Log in</span>
-                        <div className="flex-1 border-t border-gray-300"></div>
-                    </div>
+          <div className="flex items-center gap-3">
+            <div className="flex-1 border-t border-gray-300"></div>
+            <span className="text-[14px] text-[#9ca3af] font-medium">
+              Already have an account? Log in
+            </span>
+            <div className="flex-1 border-t border-gray-300"></div>
+          </div>
 
-                    <div>
-                        <button
-                            type="button"
-                            className="w-full bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium py-2 rounded-xl transition-all shadow-sm shadow-gray-200 text-[15px] flex items-center justify-center"
-                            onClick={loginFnc}
-                        >
-                            <img src={googleLogo} alt="Google Logo" className="w-10 h-10 mr-3" />
-                            Login in with Google
-                        </button>
-                    </div>
+          <div>
+            <button
+              type="button"
+              className="w-full bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium py-2 rounded-xl transition-all shadow-sm shadow-gray-200 text-[15px] flex items-center justify-center"
+              onClick={loginFnc}
+            >
+              <img
+                src={googleLogo}
+                alt="Google Logo"
+                className="w-10 h-10 mr-3"
+              />
+              Login in with Google
+            </button>
+          </div>
+        </form>
 
-                </form>
-
-                <div className="mt-5 text-center">
-                    <a href="/" className="inline-block text-[15px] text-[#9ca3af] hover:text-gray-600 transition-colors font-medium">
-                        Back to Role Selection
-                    </a>
-                </div>
-            </div>
+        <div className="mt-5 text-center">
+          <a
+            href="/"
+            className="inline-block text-[15px] text-[#9ca3af] hover:text-gray-600 transition-colors font-medium"
+          >
+            Back to Role Selection
+          </a>
         </div>
-    )
-}
+      </div>
+    </div>
+  );
+};
 
 export default SignupForm;

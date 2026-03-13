@@ -1,8 +1,8 @@
 // importing external modules 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-import { GoogleAuthProvider, signInWithPopup, getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import DB from './RTDBstruct';
+import { initializeApp } from "firebase/app";
+import { getDatabase, ref, set, get } from "firebase/database";
+import { GoogleAuthProvider, signInWithPopup, getAuth, onAuthStateChanged } from "firebase/auth";
+
 
 const firebaseConfig = {
     apiKey: "AIzaSyBkCgj3_3_e5JppMu3ByFU1vprv3HT8coA",
@@ -18,7 +18,7 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getDatabase(app);
 const provider = new GoogleAuthProvider();
-const role = ['student', 'teacher', 'admin'];
+
 
 // Signup and login with google;
 async function loginGoogle() {
@@ -34,26 +34,79 @@ async function loginGoogle() {
 }
 
 // Checking for need of authentication 
-async function authStatusCheck() {
-    onAuthStateChanged(auth, async (user) => {
-        if (!user) return;
+async function authStatusCheck(role) {
+    return new Promise((resolve) => {
+        const unsubscribe = onAuthStateChanged(auth, async (user) => {
+            unsubscribe();
+            if (!user) {
+                resolve(false);
+                return;
+            }
 
-        const uid = user.uid;
-        const userRef = ref(db, "users/" + uid);
-        const snapshot = await get(userRef);
+            if (window.location.pathname.includes('dashboard')) {
+                resolve(true);
+                return;
+            }
 
-        if (snapshot.exists()) {
-            redirectBasedOnRole(snapshot.val().role);
-        } else {
-            showRoleSelectionPage();
-        }
+            const uid = user.uid;
+            // Force lowercase to match your DB paths (admin, teacher, student)
+            const lowRole = role.toLowerCase(); 
+            const dataRef = ref(db, `${lowRole}/${uid}`);
+
+            try {
+                const snapshot = await get(dataRef);
+                if (snapshot.exists()) {
+                    // Use / at the start for absolute pathing
+                    window.location.href = `/${lowRole}/dashboard`;
+                    resolve(true); 
+                }
+            } catch (err) {
+                console.error("Database error:", err);
+                resolve(false);
+            }
+        });
     });
 }
 
 
+// checking existing user
+async function weatherExists(user, role) {
+    try {
+        if (role == `admin`) {
+            const adminRef = ref(db, `admin/${user.uid}`);
+            const snapshot = get(adminRef);
+            if (snapshot.exists) {
+                return true;
+            } else {
+                return false;
+            }
+        } else if (role == `Teacher`) {
+            const teacherRef = ref(db, `teacher/${user.uid}`);
+            const snapshot = get(teacherRef);
+            if (snapshot.exists) {
+                return true;
+            } else {
+                return false;
+            }
+        } else if (role == `Student`) {
+            const studentRef = ref(db, `student/${user.uid}`);
+            const snapshot = get(studentRef);
+            if (snapshot.exists) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+    } catch (error) {
+        console.error(error);
+        return true;
+    }
+}
+
 const authWithFirebase = {
     loginGoogle: loginGoogle,
-    authStatusCheck: authStatusCheck
+    authStatusCheck: authStatusCheck,
+    weatherExists: weatherExists,
 }
 
 export default authWithFirebase;

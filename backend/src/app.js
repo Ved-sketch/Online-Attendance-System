@@ -8,7 +8,6 @@ const teacherRoutes = require("./Routes/teacherRoutes");
 const app = express();
 
 app.use(cors());
-
 app.use(express.json());
 
 app.use("/api/admin", adminRoutes);

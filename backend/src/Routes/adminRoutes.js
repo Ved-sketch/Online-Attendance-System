@@ -1,17 +1,7 @@
-import express from "express";
-
+import express from 'express';
 const router = express.Router();
+import { verifyToken, saveUser } from '../Controllers/adminControllers.js';
 
-// teacher
-// add, update, delete
-router.get("/admin/fetch_teacher",fetchTeachers);
-router.post("/admin/add_teacher",addTeacher);
-router.put("/admin/:id",updateTeacher);
-router.delete("/admin/:id",deleteTeacher);
+router.post("/signup-withgoogle", verifyToken, saveUser);
 
-//students
-// add,update,delete
-router.get("/admin/student",fetchStudents);
-router.post("/admin/add_student",addStudent);
-router.put("/admin/:id",updateStudent);
-router.delete("/admin/:id",deleteStudent);
+export default router;
