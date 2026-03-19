@@ -171,6 +171,11 @@ async function deleteClass(user, classId) {
 // connecting teacher to admin
 async function onConnectingToAdmin(user, adminId) {
     try {
+        const admineExistingref = db.ref(`admin/${adminId}`);
+        const snapshot = await admineExistingref.once(`value`);
+        if(!snapshot.exists()){
+            return false;
+        }
         const adminRef = db.ref(`admin/${adminId}/teacher`);
         const teacherAdminRef = db.ref(`teacher/${user.uid}/admin`);
         await Promise.all([

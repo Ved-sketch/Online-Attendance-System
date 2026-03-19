@@ -2,7 +2,7 @@ import { nanoid, random } from 'nanoid';
 import Db from '../database&auth/RTDBstruct.js'
 import express from 'express';
 const app = express();
-
+import { authAdmin } from '../config/firebaseAdmin.js';
 //  export async function signupUserAPI(data) {
 
 //     const response = await fetch("http://localhost:5000/api/signup", {
@@ -31,10 +31,12 @@ export async function verifyToken(req, res, next) {
         return res.status(401).json({ error: "No token provided" });
     }
     try {
+        console.log(`Token reached to server: ${token}`);
         const decodedToken = await authAdmin.verifyIdToken(token);
         req.user = decodedToken;
         next();
     } catch (error) {
+        console.error("Token verification error:", error);
         return res.status(401).json({error : "Invalid token" });
     }
 }
@@ -62,10 +64,32 @@ export async function onNewClassCreated(req, res) {
     }
 }
 
+export async function onDeleteClass(req, res) {
+    try {
+        const { classId } = req.body;
+        if (!req.user || !classId) {
+            return res.status(400).json({ error: "Missing required fields" });
+        }
+        const result = await Db.deleteClass(req.user, classId);
+        if (result === true) {
+            return res.status(200).json({
+                data: result,
+                message: "Class has been deleted successfully and all data removed from database"
+            });
+        } else {
+            return res.status(404).json({ error: "Class not found or already deleted" });
+        }
+    } catch (error) {
+        console.error("Delete Error:", error);
+        return res.status(500).json({ error: "Internal server error" });
+    }
+}
+
 export async function onConnectingToAdmin(req, res) {
     try {
         const { adminId } = req.body;
         if (!req.user || !adminId) {
+            console.log(adminId);
             return res.status(400).json({ error: "Missing required fields" });
         }
         const result = await Db.onConnectingToAdmin(req.user, adminId);
