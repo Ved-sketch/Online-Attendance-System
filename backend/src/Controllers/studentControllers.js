@@ -1,6 +1,7 @@
 import Db from '../database&auth/RTDBstruct.js'
 import express from 'express';
 const app = express();
+import { authAdmin } from '../config/firebaseAdmin.js';
 
 export async function verifyToken(req, res, next) {
     const authHeader = req.headers.authorization;
