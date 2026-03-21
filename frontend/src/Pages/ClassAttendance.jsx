@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import authWithFirebase from "../../../backend/src/database&auth/authentication";
 
 export const ClassAttendance = () => {
   const { classId } = useParams();
@@ -10,6 +11,31 @@ export const ClassAttendance = () => {
   const [currentDate, setCurrentDate] = useState('');
   const [todayAttendance, setTodayAttendance] = useState({});
   const [loading, setLoading] = useState(true);
+
+  // async function dataFetching(){
+  //   const user = await authWithFirebase.getAuthUser();
+  //   const token = await user.getIdToken();
+
+    // const response = await fetch(
+    //     "http://localhost:5000/api/teacher/new-class",
+    //     {
+    //       method: "POST",
+    //       headers: {
+    //         "Content-Type": "application/json",
+    //         Authorization: `Bearer ${token}`,
+    //       },
+    //       body: JSON.stringify({
+    //         courseName: data.name,
+    //         requiredattendance: data.criteria,
+    //         ClassId: data.id,
+    //       }),
+    //     },
+    //   );
+    //   const result = await response.json();
+    //   console.log("Class created:", result);
+  // }
+
+  // async function 
 
   useEffect(() => {
     const now = new Date();

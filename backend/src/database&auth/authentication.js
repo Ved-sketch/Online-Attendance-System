@@ -1,6 +1,6 @@
 // importing external modules 
 import { initializeApp } from "firebase/app";
-import { getDatabase, ref, set, get } from "firebase/database";
+import { getDatabase, ref, set, get, onValue } from "firebase/database";
 import { GoogleAuthProvider, signInWithPopup, getAuth, onAuthStateChanged } from "firebase/auth";
 
 
@@ -146,12 +146,49 @@ async function fetchingClassData(teacherUid) {
 }
 
 
+export function listenClasses(teacherUid, onData) {
+  const classUidRef = ref(db, `teacher/${teacherUid}/class`);
+  const unsubscribe = onValue(classUidRef, (snapshot) => {
+  const data = snapshot.val();
+  const classShown = Object.values(data || {}).map((cls) => ({
+    id: cls.classId,
+    name: cls.courseName,
+    studentCount: 85,
+    criteria: Number(cls.requiredattendance),
+  }));
+  onData(classShown || []); // ✅ never undefined
+});
+  return () => off(classUidRef); 
+}
+
+
+// async function dataFetching(classId){
+//     const teacherRef = ref(db,`teacher/${teacherUid}`);
+//     const teacherSnapshot = await get(ref);
+//     const teacherData = teacherSnapshot.val();
+//     const classRef = ref(db,`class/${classId}`);
+    
+
+//     const classData = classSnapshot.val();
+//             const dateStr = `${new Date().getDate()}-${new Date().getMonth() + 1}-${new Date().getFullYear()}`;
+
+//             if (classData.attendance && classData.attendance[dateStr]) {
+//                 return false;
+//             }
+//             const studentListObj = classData.student || {};
+//             const attendanceData = {};
+//             Object.keys(studentListObj).forEach(uid => {
+//                 attendanceData[uid] = false;
+//             })
+// }
+
 const authWithFirebase = {
     loginGoogle: loginGoogle,
     authStatusCheck: authStatusCheck,
     weatherExists: weatherExists,
     getAuthUser:getAuthUser,
     fetchingClassData:fetchingClassData,
+    listenClasses:listenClasses
 }
 
 export default authWithFirebase;

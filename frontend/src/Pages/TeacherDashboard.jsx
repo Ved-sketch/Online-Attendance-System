@@ -135,6 +135,8 @@ export const TeacherDashboard = ({ Name }) => {
       }
     }
     classFetching();
+    
+   
 
     // Update every minute to keep it current
     const interval = setInterval(updateDate, 60000);
