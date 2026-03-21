@@ -7,7 +7,7 @@ export const ConnectAdminModal = ({ isOpen, onClose, onConnect }) => {
   if (!isOpen) return null;
 
   const handleConnect = () => {
-    onConnect(adminId);
+    onConnect({adminId});
     setAdminId("");
     onClose();
   };

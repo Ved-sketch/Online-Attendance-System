@@ -1,6 +1,6 @@
 // importing external modules 
 import { initializeApp } from "firebase/app";
-import { getDatabase, ref, set, get } from "firebase/database";
+import { getDatabase, ref, set, get, onValue } from "firebase/database";
 import { GoogleAuthProvider, signInWithPopup, getAuth, onAuthStateChanged } from "firebase/auth";
 
 
@@ -34,6 +34,7 @@ async function loginGoogle() {
 }
 
 // Checking for need of authentication 
+let userObject;
 async function authStatusCheck(role) {
     return new Promise((resolve) => {
         const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -42,12 +43,11 @@ async function authStatusCheck(role) {
                 resolve(false);
                 return;
             }
-
             if (window.location.pathname.includes('dashboard')) {
                 resolve(true);
                 return;
             }
-
+            userObject = user;
             const uid = user.uid;
             // Force lowercase to match your DB paths (admin, teacher, student)
             const lowRole = role.toLowerCase(); 
@@ -69,7 +69,7 @@ async function authStatusCheck(role) {
 }
 
 
-// checking existing user
+
 async function weatherExists(user, role) {
     try {
         if (role == `admin`) {
@@ -102,11 +102,93 @@ async function weatherExists(user, role) {
         return true;
     }
 }
+// getting cookies
+async function getAuthUser(){
+
+  const auth = getAuth();
+
+  if(auth.currentUser){
+     return Promise.resolve(auth.currentUser);
+  }
+
+  return new Promise((resolve,reject)=>{
+
+    const unsubscribe = onAuthStateChanged(auth,(user)=>{
+
+      unsubscribe();
+
+      if(user) resolve(user);
+      else reject(new Error("User not authenticated"));
+
+    });
+
+  });
+
+}
+
+
+// Importing data from firebase 
+async function fetchingClassData(teacherUid) {
+    const classUidRef = ref(db, `teacher/${teacherUid}/class`);
+    const classUidSnapshot = await get(classUidRef);
+
+    if (!classUidSnapshot.exists()) {
+        return [];
+    } 
+    const classUids = Object.keys(classUidSnapshot.val());
+
+    const fetchPromises = classUids.map(async (classId) => {
+        const classSnap = await get(ref(db, `class/${classId}`));
+        return classSnap.exists() ? classSnap.val() : null;
+    });
+    const allClassData = await Promise.all(fetchPromises);
+    return allClassData.filter(data => data !== null);
+}
+
+
+export function listenClasses(teacherUid, onData) {
+  const classUidRef = ref(db, `teacher/${teacherUid}/class`);
+  const unsubscribe = onValue(classUidRef, (snapshot) => {
+  const data = snapshot.val();
+  const classShown = Object.values(data || {}).map((cls) => ({
+    id: cls.classId,
+    name: cls.courseName,
+    studentCount: 85,
+    criteria: Number(cls.requiredattendance),
+  }));
+  onData(classShown || []); // ✅ never undefined
+});
+  return () => off(classUidRef); 
+}
+
+
+// async function dataFetching(classId){
+//     const teacherRef = ref(db,`teacher/${teacherUid}`);
+//     const teacherSnapshot = await get(ref);
+//     const teacherData = teacherSnapshot.val();
+//     const classRef = ref(db,`class/${classId}`);
+    
+
+//     const classData = classSnapshot.val();
+//             const dateStr = `${new Date().getDate()}-${new Date().getMonth() + 1}-${new Date().getFullYear()}`;
+
+//             if (classData.attendance && classData.attendance[dateStr]) {
+//                 return false;
+//             }
+//             const studentListObj = classData.student || {};
+//             const attendanceData = {};
+//             Object.keys(studentListObj).forEach(uid => {
+//                 attendanceData[uid] = false;
+//             })
+// }
 
 const authWithFirebase = {
     loginGoogle: loginGoogle,
     authStatusCheck: authStatusCheck,
     weatherExists: weatherExists,
+    getAuthUser:getAuthUser,
+    fetchingClassData:fetchingClassData,
+    listenClasses:listenClasses
 }
 
 export default authWithFirebase;
