@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 
 export const ClassAttendance = () => {
   const { classId } = useParams();
@@ -43,6 +44,8 @@ export const ClassAttendance = () => {
       setLoading(false);
     } catch (error) {
       console.error('Error fetching class data:', error);
+      toast.error('Failed to fetch class data');
+
       // Fall back to mock data for development
       const mockData = {
         classId: classId,
@@ -126,7 +129,7 @@ export const ClassAttendance = () => {
       }));
 
     if (attendanceData.length === 0) {
-      alert('Please mark attendance for at least one student');
+      toast.error('Please mark attendance for at least one student');
       return;
     }
 
@@ -146,11 +149,11 @@ export const ClassAttendance = () => {
       }
       
       const result = await response.json();
-      alert(result.message || 'Attendance marked successfully!');
+      toast.success(result.message || 'Attendance marked successfully!');
       fetchClassData(); // Refresh data
     } catch (error) {
       console.error('Error marking attendance:', error);
-      alert('Failed to mark attendance. Please try again.');
+      toast.error('Failed to mark attendance. Please try again.');
     }
   };
 
@@ -166,11 +169,11 @@ export const ClassAttendance = () => {
         }
         
         const result = await response.json();
-        alert(result.message || 'Student removed successfully!');
+        toast.success(result.message || 'Student removed successfully!');
         fetchClassData(); // Refresh data
       } catch (error) {
         console.error('Error deleting student:', error);
-        alert('Failed to remove student. Please try again.');
+        toast.error('Failed to remove student. Please try again.');
       }
     }
   };

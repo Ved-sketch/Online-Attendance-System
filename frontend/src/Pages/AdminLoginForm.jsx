@@ -2,6 +2,7 @@ import { CircleUserRound, Mail, Lock } from "lucide-react";
 import googleLogo from "../assets/google-logo.webp";
 import React from "react";
 import authWithFirebase from "../../../backend/src/database&auth/authentication";
+import toast from 'react-hot-toast';
 
 const AdminLoginPage = async () => {
   const userRole = 'admin';
@@ -26,6 +27,7 @@ const AdminLoginPage = async () => {
     }
     const user = await authWithFirebase.loginGoogle();
     console.warn(`this is from admin ui page ${user}`);
+    toast.loading('Signing up with Google...');
 
     const personalInfo = {
       instituteName: instituteName,
@@ -59,14 +61,15 @@ const AdminLoginPage = async () => {
           throw new Error(result.error || "Signup failed");
         }
         console.log("Signup Success:", result.message);
+        toast.success('Signup successful!');
         return result;
       } catch (error) {
         console.error("API Call Error:", error.message);
-        alert(`Error: ${error.message}`);
+        toast.error(`Error: ${error.message}`);
         return null;
       }
     }else{
-      alert('You already have an account');
+      toast.error('You already have an account');
     }
   }
 

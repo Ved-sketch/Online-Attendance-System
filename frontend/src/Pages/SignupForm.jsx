@@ -2,6 +2,7 @@ import { User, Mail, Lock, IdCard, Building2, ChevronDown } from "lucide-react";
 import googleLogo from "../assets/google-logo.webp";
 import React from "react";
 import authWithFirebase from '../../../backend/src/database&auth/authentication';
+import toast from 'react-hot-toast';
 
 const SignupForm = ({ userRole, Identification, Task }) => {
   console.log(`this is the role ${userRole}`);
@@ -18,7 +19,7 @@ const SignupForm = ({ userRole, Identification, Task }) => {
   async function signupFnc() {
     console.log("signup button is clicked");
     if (name.length == 0 || employeeId == 0) {
-      alert("Please fill all the required field");
+      toast.error("Please fill all the required fields");
       return;
     }
     const user = await authWithFirebase.loginGoogle();
@@ -60,11 +61,11 @@ const SignupForm = ({ userRole, Identification, Task }) => {
         return result;
       } catch (error) {
         console.error("API Call Error:", error.message);
-        alert(`Error: ${error.message}`);
+        toast.error(`Error: ${error.message}`);
         return null;
       }
     } else {
-      alert("You already have an account,So login please");
+      toast.error("You already have an account,So login please");
     }
   }
 

@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { ClassCard } from '../Components/ClassCard';
+import toast from 'react-hot-toast';
 
 export const TeacherDashboard = ({Name}) => {
   const [currentDate, setCurrentDate] = useState('');
@@ -31,6 +32,7 @@ export const TeacherDashboard = ({Name}) => {
 
   const handleConnectToAdmin = () => {
     console.log('Connect to admin clicked');
+    toast.success('Connected to admin successfully!');
   };
 
   const handleEditClass = (classId) => {

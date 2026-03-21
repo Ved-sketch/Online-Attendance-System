@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { LogOut, GraduationCap, Users, UserCheck, UserX, TrendingUp } from 'lucide-react'
+import toast from 'react-hot-toast';
 
 const AdminDashboard = () => {
     // State to hold stats data - will be fetched from backend
@@ -96,8 +97,11 @@ const AdminDashboard = () => {
                     attendanceRate: 87.78
                 }
             ]);
-        } catch (error) {
+            toast.success('Student data fetched successfully');
+        } 
+        catch (error) {
             console.error('Error fetching student data:', error);
+            toast.error('Failed to fetch student data');
         } finally {
             setLoading(false);
         }
