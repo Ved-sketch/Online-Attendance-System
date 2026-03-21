@@ -33,11 +33,7 @@ const App = () => {
           </ProtectedRoute>
         }></Route>
         <Route path="/Teacher" element={<SignupForm userRole={"Teacher"} Identification={"Employee ID"} Task={"Subject"} />}></Route>
-        <Route path="/Admin/dashboard" element={
-          <ProtectedRoute>
-            <AdminDashboard />
-          </ProtectedRoute>
-        }></Route>
+        
         <Route path="/Teacher/dashboard" element={
           <ProtectedRoute>
             <TeacherDashboard />

@@ -1,10 +1,33 @@
-import express from 'express'
+const express = require("express");
+const {
+  getClassDetails,
+  takeAttendance,
+  checkAttendance,
+  showStats,
+  showStudent,
+  addStudent,
+  deleteStudent,
+  downloadStats,
+  sortStudents,
+  showSchedule
+} = require("../Controllers/teacherControllers");
+
 const router = express.Router();
-import {verifyToken,onNewClassCreated,onConnectingToAdmin,onAddTodayAttendance,markingAttendance,removingStudentFromClass,deletionTodaysAttendance} from '../Controllers/teacherControllers.js';
-router.post('/new-class',verifyToken,onNewClassCreated );
-router.post('/admin-connection',verifyToken,onConnectingToAdmin);
-router.post('/today-attendance',onAddTodayAttendance);
-router.post('/marking-attendance',markingAttendance);
-router.post('/removing-student',removingStudentFromClass);
-router.post('/deletion-attendance',deletionTodaysAttendance);
-export default router;
+
+// Get class details with students
+router.get("/teacher/class/:classId", getClassDetails);
+
+// Attendance routes
+router.post("/teacher/attendance", takeAttendance);
+router.get("/teacher/attendance", checkAttendance);
+
+// Statistics and student management
+router.get("/teacher/check_stats", showStats);
+router.get("/teacher/:id", showStudent);
+router.post("/teacher/add_student", addStudent);
+router.delete("/teacher/:id", deleteStudent);
+router.get("/teacher/download_stats", downloadStats);
+router.get("/teacher/sort", sortStudents);
+router.get("/teacher/showSchedule", showSchedule);
+
+module.exports = router;

@@ -1,9 +1,11 @@
 import admin from "firebase-admin";
 import fs from "fs";
-// import serviceAccount from './serviceAccountKey.json' assert { type: "json" };
-const serviceAccount = JSON.parse(fs.readFileSync("./config/serviceAccountKey.json", "utf8"));
+import { fileURLToPath } from "url";
+import path from "path";
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const serviceAccount = JSON.parse(fs.readFileSync(path.join(__dirname, "serviceAccountKey.json"), "utf8"));
 
-admin.initializeApp({
+if (!admin.apps.length) admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
   databaseURL: "https://attendance-tracker-29324-default-rtdb.firebaseio.com/"
 });

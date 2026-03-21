@@ -1,171 +1,332 @@
-import { nanoid, random } from 'nanoid';
-import Db from '../database&auth/RTDBstruct.js'
-import express from 'express';
-const app = express();
+const { db } = require('../database&auth/firebase');
 
-//  export async function signupUserAPI(data) {
-
-//     const response = await fetch("http://localhost:5000/api/signup", {
-
-//         method: "POST",
-
-//         headers: {
-//             "Content-Type": "application/json"
-//         },
-
-//         body: JSON.stringify(data)
-
-//     });
-
-//     return response.json();
-// }
-app.use(express.json()); // this automatically parse string of http req to object
-
-export async function verifyToken(req, res, next) {
-    const authHeader = req.headers.authorization;
-    if (!authHeader) {
-        return res.status(401).json({ error: "No authorization header" });
+// Get class details with all students
+const getClassDetails = async (req, res) => {
+  try {
+    const { classId } = req.params;
+    
+    // Fetch class information
+    const classDoc = await db.collection('classes').doc(classId).get();
+    
+    if (!classDoc.exists) {
+      return res.status(404).json({ error: 'Class not found' });
     }
-    const token = authHeader.split(" ")[1];
-    if (!token) {
-        return res.status(401).json({ error: "No token provided" });
-    }
-    try {
-        const decodedToken = await authAdmin.verifyIdToken(token);
-        req.user = decodedToken;
-        next();
-    } catch (error) {
-        return res.status(401).json({error : "Invalid token" });
-    }
-}
+    
+    const classData = classDoc.data();
+    
+    // Fetch students in the class
+    const studentsSnapshot = await db.collection('classes').doc(classId)
+      .collection('students').get();
+    
+    const students = [];
+    studentsSnapshot.forEach(doc => {
+      students.push({
+        id: doc.id,
+        ...doc.data()
+      });
+    });
+    
+    res.status(200).json({
+      classId,
+      ...classData,
+      students
+    });
+  } catch (error) {
+    console.error('Error fetching class details:', error);
+    res.status(500).json({ error: 'Failed to fetch class details' });
+  }
+};
 
-export async function onNewClassCreated(req, res) {
-    // const ClassId = nanoid(15);
-    try {
-        const { courseName, requiredattendance, ClassId } = req.body;
-        if (!req.user || !courseName || !ClassId) {
-            return res.status(400).json({ error: "Missing required fields" });
-        }
-        const result = await Db.newClassDb(req.user, courseName, requiredattendance, ClassId);
-        console.log(`you have successfully created and registered in class`);
-        if (result == true) {
-            return res.status(201).json({
-                data: result,
-                message: "Class created and registered successfully"
-            });
-        } else {
-            return res.status(500).json({error : "Process couldn't be done completely due to some reason" });
-        }
-    } catch (error) {
-        console.error(error);
-        return res.status(500).json({ error: "Internal Server Error" });
+// Mark attendance for students
+const takeAttendance = async (req, res) => {
+  try {
+    const { classId, attendance, date } = req.body;
+    
+    if (!classId || !attendance || !Array.isArray(attendance)) {
+      return res.status(400).json({ error: 'Invalid request data' });
     }
-}
+    
+    const attendanceDate = date || new Date().toISOString().split('T')[0];
+    const batch = db.batch();
+    
+    // Update attendance for each student
+    for (const record of attendance) {
+      const { studentId, status } = record;
+      
+      // Create attendance record
+      const attendanceRef = db.collection('attendance')
+        .doc(classId)
+        .collection(attendanceDate)
+        .doc(studentId);
+      
+      batch.set(attendanceRef, {
+        status,
+        markedAt: new Date().toISOString()
+      });
+      
+      // Update student stats
+      const studentRef = db.collection('classes')
+        .doc(classId)
+        .collection('students')
+        .doc(studentId);
+      
+      const studentDoc = await studentRef.get();
+      
+      if (studentDoc.exists) {
+        const studentData = studentDoc.data();
+        const totalDays = (studentData.totalDays || 0) + 1;
+        const totalPresent = status === 'present' 
+          ? (studentData.totalPresent || 0) + 1 
+          : (studentData.totalPresent || 0);
+        const totalAbsent = status === 'absent' 
+          ? (studentData.totalAbsent || 0) + 1 
+          : (studentData.totalAbsent || 0);
+        const attendanceRate = parseFloat(((totalPresent / totalDays) * 100).toFixed(1));
+        
+        batch.update(studentRef, {
+          totalDays,
+          totalPresent,
+          totalAbsent,
+          attendanceRate,
+          lastUpdated: new Date().toISOString()
+        });
+      }
+    }
+    
+    await batch.commit();
+    
+    res.status(200).json({ 
+      message: 'Attendance marked successfully',
+      recordsUpdated: attendance.length
+    });
+  } catch (error) {
+    console.error('Error marking attendance:', error);
+    res.status(500).json({ error: 'Failed to mark attendance' });
+  }
+};
 
-export async function onConnectingToAdmin(req, res) {
-    try {
-        const { adminId } = req.body;
-        if (!req.user || !adminId) {
-            return res.status(400).json({ error: "Missing required fields" });
-        }
-        const result = await Db.onConnectingToAdmin(req.user, adminId);
-        if (result == true) {
-            return res.status(200).json({
-                data: result,
-                message: `Successfully connected to admin`
-            });
-        } else {
-            return res.status(500).json({error : "Process couldn't be done completely due to some reason" });
-        }
-    } catch (error) {
-        console.error(error);
-        return res.status(500).json({ error: "Internal Server Error" });
+// Check attendance for a specific date
+const checkAttendance = async (req, res) => {
+  try {
+    const { classId, date } = req.query;
+    
+    if (!classId) {
+      return res.status(400).json({ error: 'Class ID is required' });
     }
-}
+    
+    const attendanceDate = date || new Date().toISOString().split('T')[0];
+    
+    const attendanceSnapshot = await db.collection('attendance')
+      .doc(classId)
+      .collection(attendanceDate)
+      .get();
+    
+    const attendance = {};
+    attendanceSnapshot.forEach(doc => {
+      attendance[doc.id] = doc.data();
+    });
+    
+    res.status(200).json({ 
+      date: attendanceDate,
+      attendance
+    });
+  } catch (error) {
+    console.error('Error checking attendance:', error);
+    res.status(500).json({ error: 'Failed to check attendance' });
+  }
+};
 
-export async function onAddTodayAttendance(req, res) {
-    try {
-        const { classId } = req.body;
-        if (classId == null) {
-            return res.status(400).json({ error: `Missing required fields` });
-        }
-        const result = await Db.onAddTodayAttendanceDatabase(classId);
-        if (result == true) {
-            return res.status(201).json({
-                data: result,
-                message: `new Attendence created succusfully`
-            })
-        } else {
-            return res.status(500).json({error : "Process couldn't be done completely due to some reason" });
-        }
-    } catch (error) {
-        console.error(error);
-        return res.status(500).json({ error: "Internal Server Error" });
+// Show class statistics
+const showStats = async (req, res) => {
+  try {
+    const { classId } = req.query;
+    
+    if (!classId) {
+      return res.status(400).json({ error: 'Class ID is required' });
     }
-}
+    
+    const studentsSnapshot = await db.collection('classes')
+      .doc(classId)
+      .collection('students')
+      .get();
+    
+    const stats = [];
+    studentsSnapshot.forEach(doc => {
+      stats.push({
+        studentId: doc.id,
+        ...doc.data()
+      });
+    });
+    
+    res.status(200).json({ stats });
+  } catch (error) {
+    console.error('Error fetching stats:', error);
+    res.status(500).json({ error: 'Failed to fetch statistics' });
+  }
+};
 
-export async function markingAttendance(req, res) {
-    try {
-        const { studentId, classId } = req.body;
-        if (!studentId || !classId) {
-            return res.status(400).json({ error: `Missing required fields` });
-        }
-        const result = await Db.markingAttendanceDatabase(studentId, classId);
-        if (result == true) {
-            return res.status(200).json({
-                data: result,
-                message: `successfully marked attendance`
-            })
-        } else {
-            return res.status(500).json({error : "Process couldn't be done completely due to some reason" });
-        }
+// Show individual student details
+const showStudent = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { classId } = req.query;
+    
+    if (!classId) {
+      return res.status(400).json({ error: 'Class ID is required' });
     }
-    catch (error) {
-        console.error(error);
-        return res.status(500).json({ error: "Internal Server Error" });
+    
+    const studentDoc = await db.collection('classes')
+      .doc(classId)
+      .collection('students')
+      .doc(id)
+      .get();
+    
+    if (!studentDoc.exists) {
+      return res.status(404).json({ error: 'Student not found' });
     }
-}
+    
+    res.status(200).json({ 
+      studentId: id,
+      ...studentDoc.data()
+    });
+  } catch (error) {
+    console.error('Error fetching student:', error);
+    res.status(500).json({ error: 'Failed to fetch student details' });
+  }
+};
 
-export async function removingStudentFromClass(req, res) {
-    try {
-        const { studentUserId, classId } = req.body;
-        if (!studentUserId || !classId) {
-            return res.status(400).json({ error: `Missing required fields` })
-        }
-        const result = await Db.removingStudentFromClassDatabase(studentUserId, classId);
-        if (result == true) {
-            return res.status(200).json({
-                data: result,
-                message: `sucessfully removed the student`
-            })
-        } else {
-            return res.status(500).json({error: "Process couldn't be done completely due to some reason" });
-        }
-    } catch (error) {
-        console.error(error);
-        return res.status(500).json({ error: "Internal Server Error" });
+// Add student to class
+const addStudent = async (req, res) => {
+  try {
+    const { classId, studentId, name, rollNo } = req.body;
+    
+    if (!classId || !studentId || !name || !rollNo) {
+      return res.status(400).json({ error: 'Missing required fields' });
     }
-}
+    
+    await db.collection('classes')
+      .doc(classId)
+      .collection('students')
+      .doc(studentId)
+      .set({
+        name,
+        rollNo,
+        totalPresent: 0,
+        totalDays: 0,
+        totalAbsent: 0,
+        attendanceRate: 0,
+        addedAt: new Date().toISOString()
+      });
+    
+    res.status(201).json({ 
+      message: 'Student added successfully',
+      studentId 
+    });
+  } catch (error) {
+    console.error('Error adding student:', error);
+    res.status(500).json({ error: 'Failed to add student' });
+  }
+};
 
-export async function deletionTodaysAttendance(req, res) {
-    try {
-        const { classId } = req.body;
-        if (classId == null) {
-            return res.status(400).json({ error: `Missing required fields` })
-        }
-        const result = await Db.deletionTodaysAttendanceDatabase(classId);
-        if (result == true) {
-            return res.status(200).json({
-                data: result,
-                message: `Today's attendance has been deleted successfully`
-            })
-        } else {
-            return res.status(500).json({ error : "Process couldn't be done completely due to some reason" });
-        }
-    } catch (error) {
-        console.error(error);
-        return res.status(500).json({ error: "Internal Server Error" });
+// Delete student from class
+const deleteStudent = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { classId } = req.query;
+    
+    if (!classId) {
+      return res.status(400).json({ error: 'Class ID is required' });
     }
-}
+    
+    await db.collection('classes')
+      .doc(classId)
+      .collection('students')
+      .doc(id)
+      .delete();
+    
+    res.status(200).json({ 
+      message: 'Student deleted successfully',
+      studentId: id 
+    });
+  } catch (error) {
+    console.error('Error deleting student:', error);
+    res.status(500).json({ error: 'Failed to delete student' });
+  }
+};
 
-  
+// Download statistics (placeholder)
+const downloadStats = async (req, res) => {
+  try {
+    const { classId } = req.query;
+    
+    if (!classId) {
+      return res.status(400).json({ error: 'Class ID is required' });
+    }
+    
+    // TODO: Implement CSV/Excel export functionality
+    res.status(200).json({ message: 'Download stats feature - to be implemented' });
+  } catch (error) {
+    console.error('Error downloading stats:', error);
+    res.status(500).json({ error: 'Failed to download statistics' });
+  }
+};
+
+// Sort students
+const sortStudents = async (req, res) => {
+  try {
+    const { classId, sortBy = 'rollNo', order = 'asc' } = req.query;
+    
+    if (!classId) {
+      return res.status(400).json({ error: 'Class ID is required' });
+    }
+    
+    const studentsSnapshot = await db.collection('classes')
+      .doc(classId)
+      .collection('students')
+      .orderBy(sortBy, order)
+      .get();
+    
+    const students = [];
+    studentsSnapshot.forEach(doc => {
+      students.push({
+        id: doc.id,
+        ...doc.data()
+      });
+    });
+    
+    res.status(200).json({ students });
+  } catch (error) {
+    console.error('Error sorting students:', error);
+    res.status(500).json({ error: 'Failed to sort students' });
+  }
+};
+
+// Show schedule
+const showSchedule = async (req, res) => {
+  try {
+    const { teacherId } = req.query;
+    
+    if (!teacherId) {
+      return res.status(400).json({ error: 'Teacher ID is required' });
+    }
+    
+    // TODO: Implement schedule functionality
+    res.status(200).json({ message: 'Schedule feature - to be implemented' });
+  } catch (error) {
+    console.error('Error fetching schedule:', error);
+    res.status(500).json({ error: 'Failed to fetch schedule' });
+  }
+};
+
+module.exports = {
+  getClassDetails,
+  takeAttendance,
+  checkAttendance,
+  showStats,
+  showStudent,
+  addStudent,
+  deleteStudent,
+  downloadStats,
+  sortStudents,
+  showSchedule
+};

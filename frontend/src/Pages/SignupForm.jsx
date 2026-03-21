@@ -1,36 +1,18 @@
 import { User, Mail, Lock, IdCard, Building2, ChevronDown } from "lucide-react";
 import googleLogo from "../assets/google-logo.webp";
 import React from "react";
-import DB from '../../../backend/src/database&auth/RTDBstruct'
 import authWithFirebase from '../../../backend/src/database&auth/authentication';
 
-const SignupForm = ({userRole,Identification,Task}) => {
-    
-    const [name, setName] = React.useState("");
-    const [employeeId,setEmployeeId] = React.useState("");
-
-    async function signupFnc(){
-        console.log("signup button is clicked");
-        if(name.length == 0 || employeeId == 0){
-            alert('Please fill all the required field');
-            return;
-        }
-        const user = await authWithFirebase.loginGoogle();
-        console.warn(`this is from ui page ${user}`);
-        
-        if(user != null){
-            DB.saveUserToRTDB(user);
-        }
-    }
-
-
-const SignupForm = async ({ userRole, Identification, Task }) => {
+const SignupForm = ({ userRole, Identification, Task }) => {
   console.log(`this is the role ${userRole}`);
 
-  const sesson = await authWithFirebase.authStatusCheck(userRole);
-  console.log(`result of sesson for redirecting ${sesson}`);
-
   const [name, setName] = React.useState("");
+
+  React.useEffect(() => {
+    authWithFirebase.authStatusCheck(userRole).then(sesson => {
+      console.log(`result of sesson for redirecting ${sesson}`);
+    });
+  }, [userRole]);
   const [employeeId, setEmployeeId] = React.useState("");
 
   async function signupFnc() {
