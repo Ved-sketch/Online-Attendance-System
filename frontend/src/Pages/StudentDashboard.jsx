@@ -3,7 +3,6 @@ import {
 	BookOpen,
 	CalendarDays,
 	LogOut,
-	Pencil,
 	Plus,
 	Trash2,
 } from "lucide-react";
@@ -16,9 +15,13 @@ const initialSubjects = [
 ];
 
 const getAttendanceColor = (attendance, criteria) => {
-	if (attendance >= criteria + 7) return "#16a34a";
-	if (attendance >= criteria) return "#eab308";
+	if (attendance >= criteria) return "#16a34a";
 	return "#dc2626";
+};
+
+const getAttendanceProgress = (attendance) => {
+	if (!Number.isFinite(attendance)) return 0;
+	return Math.max(0, Math.min(100, attendance));
 };
 
 const StudentDashboard = ({ name = "" }) => {
@@ -35,10 +38,6 @@ const StudentDashboard = ({ name = "" }) => {
 
 	const handleJoinClass = () => {
 		console.log("Join new class clicked");
-	};
-
-	const handleEditClass = (classId) => {
-		console.log("Edit class", classId);
 	};
 
 	const handleDeleteClass = (classId) => {
@@ -100,6 +99,8 @@ const StudentDashboard = ({ name = "" }) => {
 					<div className="space-y-3">
 						{subjects.map((subject) => {
 							const meterColor = getAttendanceColor(subject.attendance, subject.criteria);
+							const attendanceProgress = getAttendanceProgress(subject.attendance);
+							const fillAngle = attendanceProgress * 3.6;
 
 							return (
 								<article
@@ -117,23 +118,18 @@ const StudentDashboard = ({ name = "" }) => {
 										</p>
 
 										<span
-											className="h-6 w-6 rounded-full border-4 border-gray-200"
-											style={{ borderColor: meterColor }}
-											aria-label={`Attendance indicator for ${subject.name}`}
-										/>
+											className="relative h-6 w-6 shrink-0 rounded-full"
+											style={{
+												background: `conic-gradient(${meterColor} 0deg ${fillAngle}deg, #e5e7eb ${fillAngle}deg 360deg)`,
+											}}
+											aria-label={`Attendance indicator for ${subject.name}: ${attendanceProgress}%`}
+										>
+											<span className="absolute inset-[4px] rounded-full bg-white" />
+										</span>
 
 										<span className="rounded-md bg-gray-100 px-2 py-1 text-xs font-semibold text-gray-600">
 											Criteria: {subject.criteria}%
 										</span>
-
-										{/* <button
-											type="button"
-											onClick={() => handleEditClass(subject.id)}
-											className="rounded-md p-1.5 text-gray-500 transition hover:bg-blue-50 hover:text-blue-700"
-											title="Edit class"
-										>
-											<Pencil size={15} />
-										</button> */}
 
 										<button
 											type="button"
