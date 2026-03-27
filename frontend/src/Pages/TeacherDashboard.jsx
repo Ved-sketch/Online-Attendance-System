@@ -4,6 +4,7 @@ import { AddClassModal } from "../Components/AddClassModal";
 import { ConnectAdminModal } from "../Components/ConnectAdminModal";
 import { getAuth } from "firebase/auth";
 import authWithFirebase from "../../../backend/src/database&auth/authentication";
+import toast from 'react-hot-toast';
 const auth = getAuth();
 
 export const TeacherDashboard = ({ Name }) => {
@@ -36,8 +37,10 @@ export const TeacherDashboard = ({ Name }) => {
       );
       const result = await response.json();
       console.log("Class created:", result);
+      toast.success("Class created successfully!");
     } catch (err) {
       console.error(err);
+      toast.error("Failed to create class.");
     }
   }
 
@@ -64,8 +67,10 @@ export const TeacherDashboard = ({ Name }) => {
       }
       const result = await response.json();
       console.log("Class deleted successfully:", result);
+      toast.success("Class deleted successfully!");
     } catch (error) {
       console.error("Error deleting class:", error.message);
+      toast.error("Failed to delete class.");
     }
   }
 
@@ -97,6 +102,7 @@ export const TeacherDashboard = ({ Name }) => {
       return result;
     } catch (error) {
       console.error("Connection Error:", error.message);
+      toast.error("Failed to connect to admin.");
     }
   }
 
@@ -132,6 +138,7 @@ export const TeacherDashboard = ({ Name }) => {
         setClasses(classShown);
       } catch (error) {
         console.error("Error fetching classes:", error);
+        toast.error("Failed to fetch classes.");
       }
     }
     classFetching();

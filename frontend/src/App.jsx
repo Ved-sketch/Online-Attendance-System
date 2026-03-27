@@ -6,6 +6,7 @@ import SignupForm from "./Pages/SignupForm";
 import AdminDashboard from "./Pages/AdminDashboard";
 import { TeacherDashboard } from "./Pages/TeacherDashboard";
 import { ClassAttendance } from "./Pages/ClassAttendance";
+import StudentDashboard from "./Pages/StudentDashboard";
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
@@ -45,6 +46,11 @@ const App = () => {
           </ProtectedRoute>
         }></Route>
         <Route path="/Student" element={<SignupForm userRole={"Student"} Identification={"Student ID"} Task={"Semester"} />}></Route>
+        <Route path="/Student/dashboard" element={
+          <ProtectedRoute>
+            <StudentDashboard />
+          </ProtectedRoute>
+        }></Route>
       </Routes>
     </>
   );
